@@ -23,36 +23,61 @@ def process_data(input_path):
     summary = summary.rename(columns={'Duration (decimal hours)': 'Duration'})
     summary = summary[['Date', 'Tags', 'Duration', 'Project']]
     
-    return summary
+    # Add blank rows for date changes
+    formatted_data = []
+    previous_date = None
+    for _, row in summary.iterrows():
+        if row['Date'] != previous_date:
+            if previous_date is not None:  # Insert a blank row
+                formatted_data.append({'Date': '', 'Tags': '', 'Duration': '', 'Project': ''})
+            previous_date = row['Date']
+        formatted_data.append(row.to_dict())
+    
+    return pd.DataFrame(formatted_data)
 
 def display_summary(summary):
     # Create the main Tkinter window
     root = tk.Tk()
-    root.title("Summary Output")
+    root.title("Summary Table")
 
-    # Add a Text widget to display the data
-    text_widget = tk.Text(root, wrap="none", font=("Courier", 10), padx=10, pady=10)
-    text_widget.pack(fill="both", expand=True)
+    # Create a Treeview widget
+    columns = ["Date", "Tags", "Duration", "Project"]
+    tree = ttk.Treeview(root, columns=columns, show="headings", height=20)
 
-    # Insert formatted summary data into the Text widget
-    previous_date = None
-    for _, row in summary.iterrows():
-        if row['Date'] != previous_date:
-            if previous_date is not None:  # Add a blank line for date change
-                text_widget.insert(tk.END, "\n")
-            previous_date = row['Date']
-        text_widget.insert(
-            tk.END, 
-            f"{row['Date']: <12} {row['Tags']: <20} {row['Duration']:.2f} {row['Project']}\n"
-        )
+    # Define column headings
+    for col in columns:
+        tree.heading(col, text=col, anchor="w")
+        tree.column(col, anchor="w", width=150)
 
-    # Make the text read-only
-    text_widget.configure(state="disabled")
+    # Define alternating row colors
+    light_yellow = "#FFFACD"
+    dark_yellow = "#FFD700"
+    light_gray = "#D3D3D3"
+
+    # Insert rows into the Treeview
+    for idx, row in summary.iterrows():
+        values = (row['Date'], row['Tags'], f"{row['Duration']:.2f}" if row['Duration'] else '', row['Project'])
+        if row['Date'] == '':  # Blank rows
+            tag = "blank"
+        else:
+            tag = "even" if idx % 2 == 0 else "odd"
+        tree.insert("", "end", values=values, tags=(tag,))
+
+    # Apply row styles
+    tree.tag_configure("even", background=light_yellow)
+    tree.tag_configure("odd", background=dark_yellow)
+    tree.tag_configure("blank", background=light_gray)
+
+    # Add a scrollbar
+    scrollbar = ttk.Scrollbar(root, orient="vertical", command=tree.yview)
+    tree.configure(yscrollcommand=scrollbar.set)
+    scrollbar.pack(side="right", fill="y")
+    tree.pack(fill="both", expand=True)
 
     # Run the Tkinter main loop
     root.mainloop()
 
 if __name__ == "__main__":
-    input_file = 'C:\\Users\\mbelanger\\OneDrive - CDPQ\\perso\\ftemps\\6007_Boarhub_902_informatique_3055_PATBQ_4051_VSP_20241120135529.csv'   
+    input_file = 'C:\\Users\\mbelanger\\OneDrive - CDPQ\\perso\\ftemps\\6007_Boarhub_902_informatique_3055_PATBQ_4051_VSP_20241120135529.csv' 
     summary_data = process_data(input_file)
     display_summary(summary_data)
