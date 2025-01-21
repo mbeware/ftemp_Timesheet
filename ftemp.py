@@ -90,11 +90,15 @@ class ft:
 
         # Create the main Tkinter window
         self.root = tk.Tk()
-        self.root.title(f"Summary Table - {os.path.basename(file_path)}")
 
+        self.root.title(f"Summary Table - {os.path.basename(file_path)}")
+        self.root.state("zoomed")
+
+        
+        
         # Create a Treeview widget
         columns = ["Date", "Tags", "Duration", "Project"]
-        self.tree = ttk.Treeview(self.root, columns=columns, show="headings", height=20)
+        self.tree = ttk.Treeview(self.root, columns=columns, show="headings")
 
         # Define column headings
         for col in columns:
@@ -108,11 +112,13 @@ class ft:
         scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side="right", fill="y")
-        self.tree.pack(fill="both", expand=True)
+        self.tree.pack(fill="both", expand=1)
+        
 
         # # Add navigation buttons
         select_frame = tk.Frame(self.root)
-        select_frame.pack(fill="x", padx=10, pady=10)
+        
+        
 
         self.ftempFolder = 'C:\\Users\\mbelanger\\OneDrive - CDPQ\\perso\\ftemps\\' 
         self.Allfiles = sorted(f for f in os.listdir(self.ftempFolder) if f.endswith('.csv'))
@@ -120,10 +126,11 @@ class ft:
         fileChoiceListvar = tk.StringVar()
         fileChoiceListvar.set(self.Allfiles)
 
-        self.fileChoiceList = tk.Listbox(select_frame, listvariable=fileChoiceListvar, selectmode='browse')
+        self.fileChoiceList = tk.Listbox(select_frame, listvariable=fileChoiceListvar, selectmode='browse',width=100)
+        
         self.fileChoiceList.bind('<<ListboxSelect>>', self.change_file)
-        self.fileChoiceList.pack(side="left", padx=5)
-
+        self.fileChoiceList.pack(fill=tk.X,side="left",expand=True, padx=5)
+        select_frame.pack(anchor=tk.SE,fill=tk.X,expand=True, padx=10, pady=10)
         # next_btn = tk.Button(btn_frame, text="Next File", command=lambda: change_file("next", file_path, tree, folder_path))
         # next_btn.pack(side="left", padx=5)
 
